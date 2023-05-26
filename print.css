@@ -1,0 +1,14 @@
+.print-button {
+    display: none;
+  }
+  
+  /* Adjust the layout for printing */
+  .container {
+    display: block;
+    margin: 0 auto;
+    max-width: 800px;
+  }
+  
+  .box {
+    page-break-inside: avoid;
+  }

@@ -1,0 +1,14 @@
+{
+  "name": "javascript-gui",
+  "version": "1.0.0",
+  "main": "main.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron ."
+  },
+  "description": "- Install electron",
+  "author": "",
+  "dependencies": {
+    "electron": "^24.3.0"
+  }
+}

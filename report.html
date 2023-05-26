@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Report</title>
+  <link rel="stylesheet" type="text/css" href="report.css">
+  <link rel="stylesheet" type="text/css" href="print.css" media="print">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+</head>
+<body>
+  <div class="title-bar">
+    <img src="https://scontent.fmnl25-1.fna.fbcdn.net/v/t1.15752-9/348383127_1905405623155679_9178131715999935996_n.png?_nc_cat=108&ccb=1-7&_nc_sid=ae9488&_nc_ohc=lgjwfhxVg7YAX-re0F6&_nc_ht=scontent.fmnl25-1.fna&oh=03_AdSUSjNHF3f6VnbYmCaIut7NzIusAx5rLbODV0Nz_JbeQA&oe=64933BAE" alt="Logo" class="logo">
+    <div class="title-container">
+      <h1 class="title">Anomaly Report</h1>
+      <div class="date-time">
+        <p>[</p><p class="date-time-label" id="current-date-time"></p> <p>]</p>
+      </div>
+    </div>
+    <button class="print-button" onclick="printReport()">Print</button>
+  </div>
+  
+  <div class="container">
+  <div class="box high">
+    <h2 class="box-title">High</h2>
+    <div class="separator"></div>
+    <div class="box-description" id="high-description"></div>
+  </div>
+  <div class="box medium">
+    <h2 class="box-title">Medium</h2>
+    <div class="separator"></div>
+    <div class="box-description" id="medium-description"></div>
+  </div>
+  <div class="box low">
+    <h2 class="box-title">Low</h2>
+    <div class="separator"></div>
+    <div class="box-description" id="low-description"></div>
+  </div>
+</div>
+  
+  <script>
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString();
+    const currentTime = currentDate.toLocaleTimeString();
+    const dateTimeString = `Date: ${formattedDate} | Time: ${currentTime}`;
+    document.getElementById('current-date-time').textContent = dateTimeString;
+
+    function generateDescription(timestamp, type, name) {
+      const formattedTimestamp = timestamp;
+      return `[${formattedTimestamp}] ${type} - ${name}`;
+    }
+
+      fetch('example_data.json')
+      .then(response => response.json())
+      .then(data => {
+        const highBox = document.querySelector('.box.high');
+        const highDescription = document.getElementById('high-description');
+        const mediumBox = document.querySelector('.box.medium');
+        const mediumDescription = document.getElementById('medium-description');
+        const lowBox = document.querySelector('.box.low');
+        const lowDescription = document.getElementById('low-description');
+
+        data.forEach(item => {
+          const { timestamp, type, name, category } = item;
+          const description = generateDescription(timestamp, type, name);
+          const boxItem = document.createElement('p');
+          boxItem.textContent = description;
+
+          if (category === 'High') {
+            highDescription.appendChild(boxItem);
+          } else if (category === 'Medium') {
+            mediumDescription.appendChild(boxItem);
+          } else if (category === 'Low') {
+            lowDescription.appendChild(boxItem);
+          }
+        });
+      });
+    
+      function printReport() {
+  const doc = new jsPDF();
+  const highDescriptions = Array.from(document.querySelectorAll('.box.high .box-description p'));
+  const mediumDescriptions = Array.from(document.querySelectorAll('.box.medium .box-description p'));
+  const lowDescriptions = Array.from(document.querySelectorAll('.box.low .box-description p'));
+
+  const descriptions = [
+    { category: 'High', descriptions: highDescriptions },
+    { category: 'Medium', descriptions: mediumDescriptions },
+    { category: 'Low', descriptions: lowDescriptions }
+  ];
+
+  const MAX_LINES_PER_PAGE = 40;
+  let currentPage = 1;
+  let currentLine = 1;
+
+  const addDescriptionToPage = (category, description) => {
+    const formattedDescription = `${description.textContent}`;
+    doc.setFontSize(12);
+    doc.text(10, currentLine * 10 + 30, formattedDescription);
+    currentLine++;
+
+    if (currentLine > MAX_LINES_PER_PAGE) {
+      doc.addPage();
+      currentPage++;
+      currentLine = 1;
+    }
+  };
+
+  const title = 'Anomaly Report';
+  const currentDate = new Date();
+  const formattedDate = currentDate.toLocaleDateString();
+  const currentTime = currentDate.toLocaleTimeString();
+  const dateTimeString = `Date: ${formattedDate} | Time: ${currentTime}`;
+
+  doc.setFontSize(16);
+  doc.text(10, 10, title);
+  doc.setFontSize(12);
+  doc.text(10, 20, dateTimeString);
+
+  descriptions.forEach(({ category, descriptions }) => {
+    doc.setFontSize(14);
+    doc.text(10, currentLine * 10 + 30, category);
+    currentLine++;
+    descriptions.forEach(description => {
+      addDescriptionToPage(category, description);
+    });
+    currentLine++;
+  });
+
+  if (currentPage === 1) {
+    doc.autoPrint({ variant: 'non-conform' });
+  }
+  const fileName = `Report_${formattedDate}.pdf`;
+  doc.save(fileName);
+}
+  </script>
+</body>
+</html>
